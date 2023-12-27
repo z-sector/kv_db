@@ -18,13 +18,6 @@ linters-settings:
             desc: Please don't use reflect package
           - pkg: "github.com/pkg/errors"
             desc: Should be replaced by standard lib errors package
-  forbidigo:
-    forbid:
-      - p: ^print.*$
-        msg: Do not commit print statements.
-      - p: ^fmt\.Print.*$
-        msg: Do not commit print statements.
-    analyze-types: true
 
 issues:
   exclude-rules:
@@ -34,6 +27,10 @@ issues:
         - dupl
         - gocyclo
         - gosec
+    - path: cmd/loop/
+      linters:
+        - forbidigo
+
   exclude:
     - "captLocal: `(ID|RID)' should not be capitalized"
 
