@@ -77,18 +77,18 @@ func (m *MockStorageLayer) EXPECT() *MockStorageLayerMockRecorder {
 	return m.recorder
 }
 
-// Del mocks base method.
-func (m *MockStorageLayer) Del(ctx context.Context, key string) error {
+// Delete mocks base method.
+func (m *MockStorageLayer) Delete(ctx context.Context, key string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Del", ctx, key)
+	ret := m.ctrl.Call(m, "Delete", ctx, key)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Del indicates an expected call of Del.
-func (mr *MockStorageLayerMockRecorder) Del(ctx, key any) *gomock.Call {
+// Delete indicates an expected call of Delete.
+func (mr *MockStorageLayerMockRecorder) Delete(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Del", reflect.TypeOf((*MockStorageLayer)(nil).Del), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockStorageLayer)(nil).Delete), ctx, key)
 }
 
 // Get mocks base method.

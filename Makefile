@@ -1,3 +1,5 @@
+BIN := "./bin/app"
+
 .PHONY: install-lint-deps
 install-lint-deps:
 	@(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.55.2
@@ -18,3 +20,11 @@ generate: install-gomock
 test:
 	go test -v -race -count=1 -coverpkg=./internal/... -coverprofile=coverage.out ./...
 	go tool cover -func coverage.out
+
+.PHONY: build
+build:
+	go build -v -o $(BIN) ./cmd/loop
+
+.PHONY: run
+run: build
+	$(BIN)

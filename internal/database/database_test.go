@@ -156,7 +156,7 @@ func TestDatabase_DelCommand(t *testing.T) {
 		database, err := NewDatabase(compute, storage, dlog.NewNonSlog())
 		require.NoError(t, err)
 		compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
-		storage.EXPECT().Del(ctx, arg0).Return(nil)
+		storage.EXPECT().Delete(ctx, arg0).Return(nil)
 
 		res := database.HandleQuery(ctx, inputQuery)
 
@@ -170,7 +170,7 @@ func TestDatabase_DelCommand(t *testing.T) {
 		require.NoError(t, err)
 		expError := errors.New("test error")
 		compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
-		storage.EXPECT().Del(ctx, arg0).Return(expError)
+		storage.EXPECT().Delete(ctx, arg0).Return(expError)
 
 		res := database.HandleQuery(ctx, inputQuery)
 

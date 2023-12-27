@@ -14,7 +14,7 @@ type ComputeLayer interface {
 type StorageLayer interface {
 	Set(ctx context.Context, key, value string) error
 	Get(ctx context.Context, key string) (string, bool, error)
-	Del(ctx context.Context, key string) error
+	Delete(ctx context.Context, key string) error
 }
 
 type Database struct {
@@ -95,7 +95,7 @@ func (d *Database) handleGetQuery(ctx context.Context, query Query) string {
 
 func (d *Database) handleDelQuery(ctx context.Context, query Query) string {
 	arguments := query.Arguments()
-	if err := d.storageLayer.Del(ctx, arguments[0]); err != nil {
+	if err := d.storageLayer.Delete(ctx, arguments[0]); err != nil {
 		return fmt.Sprintf("[error] %s", err.Error())
 	}
 
