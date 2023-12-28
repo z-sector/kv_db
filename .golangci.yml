@@ -1,0 +1,87 @@
+run:
+  tests: true
+  go: "1.21"
+
+linters-settings:
+  funlen:
+    lines: 120
+    statements: 80
+  gofumpt:
+    module-path: "kv_db"
+  depguard:
+    rules:
+      main:
+        files:
+          - $all
+        deny:
+          - pkg: reflect
+            desc: Please don't use reflect package
+          - pkg: "github.com/pkg/errors"
+            desc: Should be replaced by standard lib errors package
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - dupl
+        - gocyclo
+        - gosec
+    - path: cmd/loop/
+      linters:
+        - forbidigo
+
+  exclude:
+    - "captLocal: `(ID|RID)' should not be capitalized"
+
+linters:
+  disable-all: true
+  enable:
+    - asciicheck
+    - bodyclose
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - funlen
+    - forbidigo
+    - goimports
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gofmt
+    - gofumpt
+    - goheader
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - importas
+    - ineffassign
+    - lll
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - noctx
+    - prealloc
+    - predeclared
+    - revive
+    - staticcheck
+    - stylecheck
+    - tagliatelle
+    - thelper
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
