@@ -18,7 +18,7 @@ generate: install-gomock
 
 .PHONY: test
 test:
-	go test -v -race -count=1 -coverpkg=./internal/... -coverprofile=coverage.out ./...
+	go test -v -race -count=1 -coverpkg=./internal/...,./config/... -coverprofile=coverage.out ./...
 	go tool cover -func coverage.out
 
 .PHONY: build
