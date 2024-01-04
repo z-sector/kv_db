@@ -12,7 +12,7 @@ import (
 	"kv_db/internal/database/compute/analyzer"
 	"kv_db/internal/database/compute/parser"
 	"kv_db/internal/database/storage"
-	"kv_db/internal/database/storage/backend/memory"
+	"kv_db/internal/database/storage/engine/memory"
 )
 
 func main() {

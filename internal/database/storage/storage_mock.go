@@ -16,31 +16,31 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockBackend is a mock of Backend interface.
-type MockBackend struct {
+// MockEngine is a mock of Engine interface.
+type MockEngine struct {
 	ctrl     *gomock.Controller
-	recorder *MockBackendMockRecorder
+	recorder *MockEngineMockRecorder
 }
 
-// MockBackendMockRecorder is the mock recorder for MockBackend.
-type MockBackendMockRecorder struct {
-	mock *MockBackend
+// MockEngineMockRecorder is the mock recorder for MockEngine.
+type MockEngineMockRecorder struct {
+	mock *MockEngine
 }
 
-// NewMockBackend creates a new mock instance.
-func NewMockBackend(ctrl *gomock.Controller) *MockBackend {
-	mock := &MockBackend{ctrl: ctrl}
-	mock.recorder = &MockBackendMockRecorder{mock}
+// NewMockEngine creates a new mock instance.
+func NewMockEngine(ctrl *gomock.Controller) *MockEngine {
+	mock := &MockEngine{ctrl: ctrl}
+	mock.recorder = &MockEngineMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockBackend) EXPECT() *MockBackendMockRecorder {
+func (m *MockEngine) EXPECT() *MockEngineMockRecorder {
 	return m.recorder
 }
 
 // Delete mocks base method.
-func (m *MockBackend) Delete(arg0 context.Context, arg1 string) error {
+func (m *MockEngine) Delete(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -48,13 +48,13 @@ func (m *MockBackend) Delete(arg0 context.Context, arg1 string) error {
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockBackendMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
+func (mr *MockEngineMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockBackend)(nil).Delete), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockEngine)(nil).Delete), arg0, arg1)
 }
 
 // Get mocks base method.
-func (m *MockBackend) Get(arg0 context.Context, arg1 string) (string, bool, error) {
+func (m *MockEngine) Get(arg0 context.Context, arg1 string) (string, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(string)
@@ -64,13 +64,13 @@ func (m *MockBackend) Get(arg0 context.Context, arg1 string) (string, bool, erro
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockBackendMockRecorder) Get(arg0, arg1 any) *gomock.Call {
+func (mr *MockEngineMockRecorder) Get(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockBackend)(nil).Get), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockEngine)(nil).Get), arg0, arg1)
 }
 
 // Set mocks base method.
-func (m *MockBackend) Set(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockEngine) Set(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -78,7 +78,7 @@ func (m *MockBackend) Set(arg0 context.Context, arg1, arg2 string) error {
 }
 
 // Set indicates an expected call of Set.
-func (mr *MockBackendMockRecorder) Set(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockEngineMockRecorder) Set(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockBackend)(nil).Set), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockEngine)(nil).Set), arg0, arg1, arg2)
 }

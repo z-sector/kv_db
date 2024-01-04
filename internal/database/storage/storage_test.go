@@ -14,13 +14,13 @@ import (
 func TestNewStorage(t *testing.T) {
 	t.Parallel()
 
-	backend := getMockBackend(t)
+	engine := getMockEngine(t)
 
 	storage, err := NewStorage(nil, nil)
 	require.Error(t, err)
 	require.Nil(t, storage)
 
-	storage, err = NewStorage(backend, nil)
+	storage, err = NewStorage(engine, nil)
 	require.Error(t, err)
 	require.Nil(t, storage)
 
@@ -28,7 +28,7 @@ func TestNewStorage(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, storage)
 
-	storage, err = NewStorage(backend, dlog.NewNonSlog())
+	storage, err = NewStorage(engine, dlog.NewNonSlog())
 	require.NoError(t, err)
 	require.NotNil(t, storage)
 }
@@ -41,9 +41,9 @@ func TestMustStorage(t *testing.T) {
 	})
 
 	require.NotPanics(t, func() {
-		backend := getMockBackend(t)
+		engine := getMockEngine(t)
 
-		MustStorage(backend, dlog.NewNonSlog())
+		MustStorage(engine, dlog.NewNonSlog())
 	})
 }
 
@@ -56,10 +56,10 @@ func TestStorage_Set(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
-		backend := getMockBackend(t)
-		storage, err := NewStorage(backend, dlog.NewNonSlog())
+		engine := getMockEngine(t)
+		storage, err := NewStorage(engine, dlog.NewNonSlog())
 		require.NoError(t, err)
-		backend.EXPECT().
+		engine.EXPECT().
 			Set(gomock.Eq(ctx), gomock.Eq(key), gomock.Eq(value)).
 			Return(nil)
 
@@ -70,10 +70,10 @@ func TestStorage_Set(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		ctx := context.Background()
-		backend := getMockBackend(t)
-		storage, err := NewStorage(backend, dlog.NewNonSlog())
+		engine := getMockEngine(t)
+		storage, err := NewStorage(engine, dlog.NewNonSlog())
 		require.NoError(t, err)
-		backend.EXPECT().
+		engine.EXPECT().
 			Set(gomock.Eq(ctx), gomock.Eq(key), gomock.Eq(value)).
 			Return(expErr)
 
@@ -92,10 +92,10 @@ func TestStorage_Get(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
-		backend := getMockBackend(t)
-		storage, err := NewStorage(backend, dlog.NewNonSlog())
+		engine := getMockEngine(t)
+		storage, err := NewStorage(engine, dlog.NewNonSlog())
 		require.NoError(t, err)
-		backend.EXPECT().
+		engine.EXPECT().
 			Get(gomock.Eq(ctx), gomock.Eq(key)).
 			Return(value, true, nil)
 
@@ -108,10 +108,10 @@ func TestStorage_Get(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		ctx := context.Background()
-		backend := getMockBackend(t)
-		storage, err := NewStorage(backend, dlog.NewNonSlog())
+		engine := getMockEngine(t)
+		storage, err := NewStorage(engine, dlog.NewNonSlog())
 		require.NoError(t, err)
-		backend.EXPECT().
+		engine.EXPECT().
 			Get(gomock.Eq(ctx), gomock.Eq(key)).
 			Return("", false, nil)
 
@@ -124,10 +124,10 @@ func TestStorage_Get(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		ctx := context.Background()
-		backend := getMockBackend(t)
-		storage, err := NewStorage(backend, dlog.NewNonSlog())
+		engine := getMockEngine(t)
+		storage, err := NewStorage(engine, dlog.NewNonSlog())
 		require.NoError(t, err)
-		backend.EXPECT().
+		engine.EXPECT().
 			Get(gomock.Eq(ctx), gomock.Eq(key)).
 			Return("", false, expErr)
 
@@ -147,10 +147,10 @@ func TestStorage_Delete(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
-		backend := getMockBackend(t)
-		storage, err := NewStorage(backend, dlog.NewNonSlog())
+		engine := getMockEngine(t)
+		storage, err := NewStorage(engine, dlog.NewNonSlog())
 		require.NoError(t, err)
-		backend.EXPECT().
+		engine.EXPECT().
 			Delete(gomock.Eq(ctx), gomock.Eq(key)).
 			Return(nil)
 
@@ -161,10 +161,10 @@ func TestStorage_Delete(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		ctx := context.Background()
-		backend := getMockBackend(t)
-		storage, err := NewStorage(backend, dlog.NewNonSlog())
+		engine := getMockEngine(t)
+		storage, err := NewStorage(engine, dlog.NewNonSlog())
 		require.NoError(t, err)
-		backend.EXPECT().
+		engine.EXPECT().
 			Delete(gomock.Eq(ctx), gomock.Eq(key)).
 			Return(expErr)
 
@@ -174,9 +174,9 @@ func TestStorage_Delete(t *testing.T) {
 	})
 }
 
-func getMockBackend(t *testing.T) *MockBackend {
+func getMockEngine(t *testing.T) *MockEngine {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
-	return NewMockBackend(ctrl)
+	return NewMockEngine(ctrl)
 }
