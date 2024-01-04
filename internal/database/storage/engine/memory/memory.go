@@ -1,9 +1,15 @@
 package memory
 
-import "context"
+import (
+	"context"
+	"sync"
+
+	"kv_db/pkg/lock"
+)
 
 type HashTable struct {
-	data map[string]string
+	mutex sync.RWMutex
+	data  map[string]string
 }
 
 func NewHashTable() *HashTable {
@@ -13,12 +19,18 @@ func NewHashTable() *HashTable {
 }
 
 func (s *HashTable) Set(_ context.Context, key string, value string) error {
-	s.data[key] = value
+	lock.WithLock(&s.mutex, func() {
+		s.data[key] = value
+	})
 	return nil
 }
 
 func (s *HashTable) Get(_ context.Context, key string) (string, bool, error) {
-	value, ok := s.data[key]
+	var value string
+	var ok bool
+	lock.WithLock(s.mutex.RLocker(), func() {
+		value, ok = s.data[key]
+	})
 	if !ok {
 		return "", false, nil
 	}
@@ -26,6 +38,8 @@ func (s *HashTable) Get(_ context.Context, key string) (string, bool, error) {
 }
 
 func (s *HashTable) Delete(_ context.Context, key string) error {
-	delete(s.data, key)
+	lock.WithLock(&s.mutex, func() {
+		delete(s.data, key)
+	})
 	return nil
 }
