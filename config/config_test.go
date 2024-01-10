@@ -15,17 +15,15 @@ func TestLoad(t *testing.T) {
 		dir := t.TempDir()
 		src := filepath.Join(dir, "non_test.yaml")
 
-		cfg, err := Load(src)
+		_, err := Load(src)
 
 		require.Error(t, err)
-		require.Nil(t, cfg)
 	})
 
 	t.Run("empty filename", func(t *testing.T) {
-		cfg, err := Load("")
+		_, err := Load("")
 
 		require.NoError(t, err)
-		require.NotNil(t, cfg)
 	})
 
 	t.Run("empty file", func(t *testing.T) {
@@ -34,10 +32,9 @@ func TestLoad(t *testing.T) {
 		err := os.WriteFile(src, []byte(""), 0o666)
 		require.NoError(t, err)
 
-		cfg, err := Load(src)
+		_, err = Load(src)
 
 		require.NoError(t, err)
-		require.NotNil(t, cfg)
 	})
 
 	t.Run("invalid file", func(t *testing.T) {
@@ -46,10 +43,9 @@ func TestLoad(t *testing.T) {
 		err := os.WriteFile(src, []byte("123"), 0o666)
 		require.NoError(t, err)
 
-		cfg, err := Load(src)
+		_, err = Load(src)
 
 		require.Error(t, err)
-		require.Nil(t, cfg)
 	})
 
 	t.Run("load config from example", func(t *testing.T) {

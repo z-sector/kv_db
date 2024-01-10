@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"kv_db/pkg/lock"
+	"kv_db/pkg/dlock"
 )
 
 type HashTable struct {
@@ -19,7 +19,7 @@ func NewHashTable() *HashTable {
 }
 
 func (s *HashTable) Set(_ context.Context, key string, value string) error {
-	lock.WithLock(&s.mutex, func() {
+	dlock.WithLock(&s.mutex, func() {
 		s.data[key] = value
 	})
 	return nil
@@ -28,7 +28,7 @@ func (s *HashTable) Set(_ context.Context, key string, value string) error {
 func (s *HashTable) Get(_ context.Context, key string) (string, bool, error) {
 	var value string
 	var ok bool
-	lock.WithLock(s.mutex.RLocker(), func() {
+	dlock.WithLock(s.mutex.RLocker(), func() {
 		value, ok = s.data[key]
 	})
 	if !ok {
@@ -38,7 +38,7 @@ func (s *HashTable) Get(_ context.Context, key string) (string, bool, error) {
 }
 
 func (s *HashTable) Delete(_ context.Context, key string) error {
-	lock.WithLock(&s.mutex, func() {
+	dlock.WithLock(&s.mutex, func() {
 		delete(s.data, key)
 	})
 	return nil
