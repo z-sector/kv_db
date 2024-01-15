@@ -6,8 +6,10 @@ linters-settings:
   funlen:
     lines: 120
     statements: 80
+
   gofumpt:
     module-path: "kv_db"
+
   depguard:
     rules:
       main:
@@ -18,6 +20,12 @@ linters-settings:
             desc: Please don't use reflect package
           - pkg: "github.com/pkg/errors"
             desc: Should be replaced by standard lib errors package
+
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        yaml: snake
 
 issues:
   exclude-rules:
