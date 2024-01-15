@@ -60,6 +60,7 @@ func TestLoad(t *testing.T) {
 		require.Equal(t, "127.0.0.1:3223", cfg.Network.Address)
 		require.Equal(t, 100, cfg.Network.MaxConnections)
 
+		require.Equal(t, false, *cfg.Logging.JSON)
 		require.Equal(t, "info", cfg.Logging.Level)
 		require.Equal(t, "/log/output.log", cfg.Logging.Output)
 	})

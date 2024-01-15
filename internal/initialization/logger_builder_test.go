@@ -43,11 +43,13 @@ func TestCreateLogger(t *testing.T) {
 func TestCreateJSONLogger(t *testing.T) {
 	t.Parallel()
 
+	json := true
 	cfg := config.LoggingConfig{
-		JSON: true,
+		JSON: &json,
 	}
 
 	logger, err := CreateLogger(cfg, io.Discard)
+
 	require.NoError(t, err)
 	require.NotNil(t, logger)
 	require.IsType(t, &slog.JSONHandler{}, logger.Handler())

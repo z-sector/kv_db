@@ -40,7 +40,7 @@ func CreateLogger(cfg config.LoggingConfig, w io.Writer) (*slog.Logger, error) {
 	opts := &slog.HandlerOptions{Level: level}
 
 	var handler slog.Handler
-	if cfg.JSON {
+	if cfg.JSON == nil || *cfg.JSON {
 		handler = slog.NewJSONHandler(w, opts)
 	} else {
 		handler = slog.NewTextHandler(w, opts)

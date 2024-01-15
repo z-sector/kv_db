@@ -23,7 +23,7 @@ type NetworkConfig struct {
 }
 
 type LoggingConfig struct {
-	JSON   bool   `yaml:"json"`
+	JSON   *bool  `yaml:"json"`
 	Level  string `yaml:"level"`
 	Output string `yaml:"output"`
 }
