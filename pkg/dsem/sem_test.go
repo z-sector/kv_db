@@ -79,9 +79,12 @@ func testWithLimit2(t *testing.T, semaphore Semaphore) {
 
 	res := nonBlockingAcquire()
 
+	timer := time.NewTimer(10 * time.Millisecond)
+	defer timer.Stop()
+
 	var isError bool
 	select {
-	case <-time.After(100 * time.Millisecond):
+	case <-timer.C:
 		isError = false
 		semaphore.Release()
 	case <-res:

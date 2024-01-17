@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"kv_db/internal/database"
+	"kv_db/internal/database/comd"
 	"kv_db/internal/database/compute"
 )
 
@@ -24,9 +25,9 @@ func NewAnalyzer(logger *slog.Logger) (*QueryAnalyzer, error) {
 	}
 
 	analyser.validators = []func(database.Query) error{
-		database.SetCommandID: validateArgsCount(2),
-		database.GetCommandID: validateArgsCount(1),
-		database.DelCommandID: validateArgsCount(1),
+		comd.SetCommandID: validateArgsCount(2),
+		comd.GetCommandID: validateArgsCount(1),
+		comd.DelCommandID: validateArgsCount(1),
 	}
 
 	return analyser, nil
@@ -46,8 +47,8 @@ func (a *QueryAnalyzer) AnalyzeQuery(_ context.Context, tokens []string) (databa
 	}
 
 	command := tokens[0]
-	commandID := database.GetCommandIDByName(command)
-	if commandID == database.UnknownCommandID {
+	commandID := comd.GetCommandIDByName(command)
+	if commandID == comd.UnknownCommandID {
 		return database.Query{}, compute.ErrInvalidCommand
 	}
 

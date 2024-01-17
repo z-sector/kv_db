@@ -37,6 +37,10 @@ func TestFailedInitializerCreation(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, initializer)
 
+	initializer, err = NewInitializer(config.Config{WAL: &config.WALConfig{MaxSegmentSize: "10AB"}}, io.Discard)
+	require.Error(t, err)
+	require.Nil(t, initializer)
+
 	cfg = config.Config{Network: config.NetworkConfig{MaxConnections: -1}}
 	initializer, err = NewInitializer(cfg, io.Discard)
 	require.Error(t, err)

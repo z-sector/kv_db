@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"kv_db/internal/database"
+	"kv_db/internal/database/comd"
 	"kv_db/internal/database/compute"
 	"kv_db/pkg/dlog"
 )
@@ -67,15 +68,15 @@ func TestAnalyzeQuery(t *testing.T) {
 		},
 		"valid set query": {
 			tokens:   []string{"SET", "key", "value"},
-			expQuery: database.NewQuery(database.SetCommandID, []string{"key", "value"}),
+			expQuery: database.NewQuery(comd.SetCommandID, []string{"key", "value"}),
 		},
 		"valid get query": {
 			tokens:   []string{"GET", "key"},
-			expQuery: database.NewQuery(database.GetCommandID, []string{"key"}),
+			expQuery: database.NewQuery(comd.GetCommandID, []string{"key"}),
 		},
 		"valid del query": {
 			tokens:   []string{"DEL", "key"},
-			expQuery: database.NewQuery(database.DelCommandID, []string{"key"}),
+			expQuery: database.NewQuery(comd.DelCommandID, []string{"key"}),
 		},
 	}
 

@@ -21,6 +21,7 @@ func main() {
 	memory.NewHashTable()
 	dbStorage := storage.MustStorage(
 		memory.NewHashTable(),
+		nil,
 		logger.With(slog.String("layer", "storage")),
 	)
 

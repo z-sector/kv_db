@@ -23,7 +23,9 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	defer stop()
 
-	cfg := config.Config{}
+	cfg := config.Config{WAL: &config.WALConfig{
+		DataDirectory: "data",
+	}}
 	if ConfigFileName != "" {
 		var err error
 		cfg, err = config.Load(ConfigFileName)

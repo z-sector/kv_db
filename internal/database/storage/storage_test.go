@@ -8,27 +8,30 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	"kv_db/internal/database/comd"
+	"kv_db/internal/database/storage/wal"
+	"kv_db/pkg/dfuture"
 	"kv_db/pkg/dlog"
 )
 
 func TestNewStorage(t *testing.T) {
 	t.Parallel()
 
-	engine := getMockEngine(t)
+	engine, _ := getMockEngineAndWal(t)
 
-	storage, err := NewStorage(nil, nil)
+	storage, err := NewStorage(nil, nil, nil)
 	require.Error(t, err)
 	require.Nil(t, storage)
 
-	storage, err = NewStorage(engine, nil)
+	storage, err = NewStorage(engine, nil, nil)
 	require.Error(t, err)
 	require.Nil(t, storage)
 
-	storage, err = NewStorage(nil, dlog.NewNonSlog())
+	storage, err = NewStorage(nil, nil, dlog.NewNonSlog())
 	require.Error(t, err)
 	require.Nil(t, storage)
 
-	storage, err = NewStorage(engine, dlog.NewNonSlog())
+	storage, err = NewStorage(engine, nil, dlog.NewNonSlog())
 	require.NoError(t, err)
 	require.NotNil(t, storage)
 }
@@ -37,13 +40,13 @@ func TestMustStorage(t *testing.T) {
 	t.Parallel()
 
 	require.Panics(t, func() {
-		MustStorage(nil, nil)
+		MustStorage(nil, nil, nil)
 	})
 
 	require.NotPanics(t, func() {
-		engine := getMockEngine(t)
+		engine, _ := getMockEngineAndWal(t)
 
-		MustStorage(engine, dlog.NewNonSlog())
+		MustStorage(engine, nil, dlog.NewNonSlog())
 	})
 }
 
@@ -56,9 +59,16 @@ func TestStorage_Set(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
-		engine := getMockEngine(t)
-		storage, err := NewStorage(engine, dlog.NewNonSlog())
+		engine, walMock := getMockEngineAndWal(t)
+		walMock.EXPECT().Recover().Return(nil, nil)
+		walMock.EXPECT().Start().Return()
+		storage, err := NewStorage(engine, walMock, dlog.NewNonSlog())
 		require.NoError(t, err)
+		futureRes := make(chan error, 1)
+		futureRes <- nil
+		walMock.EXPECT().
+			Set(gomock.Eq(ctx), gomock.Eq(key), gomock.Eq(value)).
+			Return(dfuture.NewFuture(futureRes))
 		engine.EXPECT().
 			Set(gomock.Eq(ctx), gomock.Eq(key), gomock.Eq(value)).
 			Return(nil)
@@ -68,11 +78,36 @@ func TestStorage_Set(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("wal error", func(t *testing.T) {
 		ctx := context.Background()
-		engine := getMockEngine(t)
-		storage, err := NewStorage(engine, dlog.NewNonSlog())
+		engine, walMock := getMockEngineAndWal(t)
+		walMock.EXPECT().Recover().Return(nil, nil)
+		walMock.EXPECT().Start().Return()
+		storage, err := NewStorage(engine, walMock, dlog.NewNonSlog())
 		require.NoError(t, err)
+		futureRes := make(chan error, 1)
+		futureRes <- expErr
+		walMock.EXPECT().
+			Set(gomock.Eq(ctx), gomock.Eq(key), gomock.Eq(value)).
+			Return(dfuture.NewFuture(futureRes))
+
+		err = storage.Set(ctx, key, value)
+
+		require.ErrorIs(t, err, expErr)
+	})
+
+	t.Run("engine error", func(t *testing.T) {
+		ctx := context.Background()
+		engine, walMock := getMockEngineAndWal(t)
+		walMock.EXPECT().Recover().Return(nil, nil)
+		walMock.EXPECT().Start().Return()
+		storage, err := NewStorage(engine, walMock, dlog.NewNonSlog())
+		require.NoError(t, err)
+		futureRes := make(chan error, 1)
+		futureRes <- nil
+		walMock.EXPECT().
+			Set(gomock.Eq(ctx), gomock.Eq(key), gomock.Eq(value)).
+			Return(dfuture.NewFuture(futureRes))
 		engine.EXPECT().
 			Set(gomock.Eq(ctx), gomock.Eq(key), gomock.Eq(value)).
 			Return(expErr)
@@ -92,8 +127,8 @@ func TestStorage_Get(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
-		engine := getMockEngine(t)
-		storage, err := NewStorage(engine, dlog.NewNonSlog())
+		engine, _ := getMockEngineAndWal(t)
+		storage, err := NewStorage(engine, nil, dlog.NewNonSlog())
 		require.NoError(t, err)
 		engine.EXPECT().
 			Get(gomock.Eq(ctx), gomock.Eq(key)).
@@ -108,8 +143,8 @@ func TestStorage_Get(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		ctx := context.Background()
-		engine := getMockEngine(t)
-		storage, err := NewStorage(engine, dlog.NewNonSlog())
+		engine, _ := getMockEngineAndWal(t)
+		storage, err := NewStorage(engine, nil, dlog.NewNonSlog())
 		require.NoError(t, err)
 		engine.EXPECT().
 			Get(gomock.Eq(ctx), gomock.Eq(key)).
@@ -124,8 +159,8 @@ func TestStorage_Get(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		ctx := context.Background()
-		engine := getMockEngine(t)
-		storage, err := NewStorage(engine, dlog.NewNonSlog())
+		engine, _ := getMockEngineAndWal(t)
+		storage, err := NewStorage(engine, nil, dlog.NewNonSlog())
 		require.NoError(t, err)
 		engine.EXPECT().
 			Get(gomock.Eq(ctx), gomock.Eq(key)).
@@ -147,8 +182,15 @@ func TestStorage_Delete(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
-		engine := getMockEngine(t)
-		storage, err := NewStorage(engine, dlog.NewNonSlog())
+		engine, walMock := getMockEngineAndWal(t)
+		walMock.EXPECT().Recover().Return(nil, nil)
+		walMock.EXPECT().Start().Return()
+		storage, err := NewStorage(engine, walMock, dlog.NewNonSlog())
+		futureRes := make(chan error, 1)
+		futureRes <- nil
+		walMock.EXPECT().
+			Del(gomock.Eq(ctx), gomock.Eq(key)).
+			Return(dfuture.NewFuture(futureRes))
 		require.NoError(t, err)
 		engine.EXPECT().
 			Delete(gomock.Eq(ctx), gomock.Eq(key)).
@@ -159,11 +201,36 @@ func TestStorage_Delete(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("engine error", func(t *testing.T) {
 		ctx := context.Background()
-		engine := getMockEngine(t)
-		storage, err := NewStorage(engine, dlog.NewNonSlog())
+		engine, walMock := getMockEngineAndWal(t)
+		walMock.EXPECT().Recover().Return(nil, nil)
+		walMock.EXPECT().Start().Return()
+		storage, err := NewStorage(engine, walMock, dlog.NewNonSlog())
 		require.NoError(t, err)
+		futureRes := make(chan error, 1)
+		futureRes <- expErr
+		walMock.EXPECT().
+			Del(gomock.Eq(ctx), gomock.Eq(key)).
+			Return(dfuture.NewFuture(futureRes))
+
+		err = storage.Delete(ctx, key)
+
+		require.ErrorIs(t, err, expErr)
+	})
+
+	t.Run("engine error", func(t *testing.T) {
+		ctx := context.Background()
+		engine, walMock := getMockEngineAndWal(t)
+		walMock.EXPECT().Recover().Return(nil, nil)
+		walMock.EXPECT().Start().Return()
+		storage, err := NewStorage(engine, walMock, dlog.NewNonSlog())
+		require.NoError(t, err)
+		futureRes := make(chan error, 1)
+		futureRes <- nil
+		walMock.EXPECT().
+			Del(gomock.Eq(ctx), gomock.Eq(key)).
+			Return(dfuture.NewFuture(futureRes))
 		engine.EXPECT().
 			Delete(gomock.Eq(ctx), gomock.Eq(key)).
 			Return(expErr)
@@ -174,9 +241,28 @@ func TestStorage_Delete(t *testing.T) {
 	})
 }
 
-func getMockEngine(t *testing.T) *MockEngine {
+func TestNewStorage_WalRecover(t *testing.T) {
+	t.Parallel()
+
+	engineMock, walMock := getMockEngineAndWal(t)
+	logs := []wal.LogData{
+		{CommandID: comd.SetCommandID, Arguments: []string{"key", "value"}},
+		{CommandID: comd.DelCommandID, Arguments: []string{"key"}},
+	}
+	walMock.EXPECT().Recover().Return(logs, nil)
+	engineMock.EXPECT().Set(gomock.Any(), gomock.Eq("key"), gomock.Eq("value")).Times(1)
+	engineMock.EXPECT().Delete(gomock.Any(), gomock.Eq("key")).Times(1)
+	walMock.EXPECT().Start().Return()
+
+	storage, err := NewStorage(engineMock, walMock, dlog.NewNonSlog())
+
+	require.NoError(t, err)
+	require.NotNil(t, storage)
+}
+
+func getMockEngineAndWal(t *testing.T) (*MockEngine, *MockWAL) {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
-	return NewMockEngine(ctrl)
+	return NewMockEngine(ctrl), NewMockWAL(ctrl)
 }

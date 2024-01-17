@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -63,5 +64,10 @@ func TestLoad(t *testing.T) {
 		require.Equal(t, false, *cfg.Logging.JSON)
 		require.Equal(t, "info", cfg.Logging.Level)
 		require.Equal(t, "/log/output.log", cfg.Logging.Output)
+
+		require.Equal(t, 100, cfg.WAL.FlushingBatchLength)
+		require.Equal(t, 10*time.Millisecond, cfg.WAL.FlushingBatchTimeout)
+		require.Equal(t, "10MB", cfg.WAL.MaxSegmentSize)
+		require.Equal(t, "/data/wal", cfg.WAL.DataDirectory)
 	})
 }

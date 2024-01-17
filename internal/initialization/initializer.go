@@ -18,6 +18,7 @@ import (
 
 type Initializer struct {
 	engine storage.Engine
+	wal    storage.WAL
 	server *network.TCPServer
 	logger *slog.Logger
 }
@@ -33,6 +34,11 @@ func NewInitializer(cfg config.Config, logW io.Writer) (*Initializer, error) {
 		return nil, fmt.Errorf("failed to initialize engine: %w", err)
 	}
 
+	wal, err := CreateWAL(cfg.WAL, logger)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize wal: %w", err)
+	}
+
 	tcpServer, err := CreateNetwork(
 		cfg.Network, logger.With(slog.String("layer", "server")),
 	)
@@ -42,6 +48,7 @@ func NewInitializer(cfg config.Config, logW io.Writer) (*Initializer, error) {
 
 	initializer := &Initializer{
 		engine: dbEngine,
+		wal:    wal,
 		server: tcpServer,
 		logger: logger,
 	}
@@ -106,7 +113,7 @@ func (i *Initializer) createComputeLayer() (*compute.Compute, error) {
 
 func (i *Initializer) createStorageLayer() (*storage.Storage, error) {
 	storageLayer, err := storage.NewStorage(
-		i.engine, i.logger.With(slog.String("layer", "storage")),
+		i.engine, i.wal, i.logger.With(slog.String("layer", "storage")),
 	)
 	if err != nil {
 		i.logger.Error("failed to initialize storage layer", dlog.ErrAttr(err))
