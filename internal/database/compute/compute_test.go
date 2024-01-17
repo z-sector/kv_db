@@ -8,6 +8,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"kv_db/internal/database"
+	"kv_db/internal/database/comd"
 	"kv_db/pkg/dlog"
 )
 
@@ -58,12 +59,12 @@ func TestCompute_HandleQuery(t *testing.T) {
 			Return([]string{"GET", "key"}, nil)
 		analyzer.EXPECT().
 			AnalyzeQuery(ctx, gomock.Eq([]string{"GET", "key"})).
-			Return(database.NewQuery(database.GetCommandID, []string{"key"}), nil)
+			Return(database.NewQuery(comd.GetCommandID, []string{"key"}), nil)
 
 		query, err := compute.HandleQuery(ctx, "GET key")
 
 		require.NoError(t, err)
-		require.Equal(t, database.NewQuery(database.GetCommandID, []string{"key"}), query)
+		require.Equal(t, database.NewQuery(comd.GetCommandID, []string{"key"}), query)
 	})
 
 	t.Run("parser error", func(t *testing.T) {

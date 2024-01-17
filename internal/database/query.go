@@ -1,18 +1,20 @@
 package database
 
+import "kv_db/internal/database/comd"
+
 type Query struct {
-	commandID CmdID
+	commandID comd.CmdID
 	arguments []string
 }
 
-func NewQuery(commandID CmdID, arguments []string) Query {
+func NewQuery(commandID comd.CmdID, arguments []string) Query {
 	return Query{
 		commandID: commandID,
 		arguments: arguments,
 	}
 }
 
-func (c *Query) CommandID() CmdID {
+func (c *Query) CommandID() comd.CmdID {
 	return c.commandID
 }
 

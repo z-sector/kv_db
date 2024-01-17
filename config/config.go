@@ -3,12 +3,14 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
 	Engine  EngineConfig  `yaml:"engine"`
+	WAL     *WALConfig    `yaml:"wal"`
 	Network NetworkConfig `yaml:"network"`
 	Logging LoggingConfig `yaml:"logging"`
 }
@@ -20,6 +22,13 @@ type EngineConfig struct {
 type NetworkConfig struct {
 	Address        string `yaml:"address"`
 	MaxConnections int    `yaml:"max_connections"`
+}
+
+type WALConfig struct {
+	FlushingBatchLength  int           `yaml:"flushing_batch_length"`
+	FlushingBatchTimeout time.Duration `yaml:"flushing_batch_timeout"`
+	MaxSegmentSize       string        `yaml:"max_segment_size"`
+	DataDirectory        string        `yaml:"data_directory"`
 }
 
 type LoggingConfig struct {

@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+
+	"kv_db/internal/database/comd"
+	"kv_db/internal/database/txctx"
 )
 
 type ComputeLayer interface {
@@ -20,6 +23,7 @@ type StorageLayer interface {
 type Database struct {
 	computeLayer ComputeLayer
 	storageLayer StorageLayer
+	idGenerator  *IDGenerator
 	logger       *slog.Logger
 }
 
@@ -39,6 +43,7 @@ func NewDatabase(computeLayer ComputeLayer, storageLayer StorageLayer, logger *s
 	return &Database{
 		computeLayer: computeLayer,
 		storageLayer: storageLayer,
+		idGenerator:  NewIDGenerator(),
 		logger:       logger,
 	}, nil
 }
@@ -52,19 +57,21 @@ func MustDatabase(computeLayer ComputeLayer, storageLayer StorageLayer, logger *
 }
 
 func (d *Database) HandleQuery(ctx context.Context, queryStr string) string {
+	ctx = txctx.CtxWithTx(ctx, d.idGenerator.Generate())
+
 	query, err := d.computeLayer.HandleQuery(ctx, queryStr)
 	if err != nil {
 		return fmt.Sprintf("[error] %s", err.Error())
 	}
 
 	switch query.CommandID() {
-	case SetCommandID:
+	case comd.SetCommandID:
 		return d.handleSetQuery(ctx, query)
-	case GetCommandID:
+	case comd.GetCommandID:
 		return d.handleGetQuery(ctx, query)
-	case DelCommandID:
+	case comd.DelCommandID:
 		return d.handleDelQuery(ctx, query)
-	case UnknownCommandID:
+	case comd.UnknownCommandID:
 		d.logger.Error("compute layer is incorrect")
 	}
 

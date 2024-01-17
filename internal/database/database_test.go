@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	"kv_db/internal/database/comd"
 	"kv_db/pkg/dlog"
 )
 
@@ -56,7 +57,7 @@ func TestDatabase_SetCommand(t *testing.T) {
 	arg0 := "keyS"
 	arg1 := "valueS"
 	query := Query{
-		commandID: SetCommandID,
+		commandID: comd.SetCommandID,
 		arguments: []string{arg0, arg1},
 	}
 
@@ -66,8 +67,8 @@ func TestDatabase_SetCommand(t *testing.T) {
 		database, err := NewDatabase(compute, storage, dlog.NewNonSlog())
 		require.NoError(t, err)
 
-		compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
-		storage.EXPECT().Set(ctx, arg0, arg1).Return(nil)
+		compute.EXPECT().HandleQuery(gomock.Any(), gomock.Eq(inputQuery)).Return(query, nil)
+		storage.EXPECT().Set(gomock.Any(), arg0, arg1).Return(nil)
 
 		res := database.HandleQuery(ctx, inputQuery)
 
@@ -80,8 +81,8 @@ func TestDatabase_SetCommand(t *testing.T) {
 		database, err := NewDatabase(compute, storage, dlog.NewNonSlog())
 		require.NoError(t, err)
 		expError := errors.New("test error")
-		compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
-		storage.EXPECT().Set(ctx, arg0, arg1).Return(expError)
+		compute.EXPECT().HandleQuery(gomock.Any(), gomock.Eq(inputQuery)).Return(query, nil)
+		storage.EXPECT().Set(gomock.Any(), arg0, arg1).Return(expError)
 
 		res := database.HandleQuery(ctx, inputQuery)
 
@@ -96,7 +97,7 @@ func TestDatabase_GetCommand(t *testing.T) {
 	arg0 := "keyG"
 	expValue := "valueG"
 	query := Query{
-		commandID: GetCommandID,
+		commandID: comd.GetCommandID,
 		arguments: []string{arg0},
 	}
 
@@ -105,8 +106,8 @@ func TestDatabase_GetCommand(t *testing.T) {
 		compute, storage := getMockComputeAndStorage(t)
 		database, err := NewDatabase(compute, storage, dlog.NewNonSlog())
 		require.NoError(t, err)
-		compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
-		storage.EXPECT().Get(ctx, arg0).Return(expValue, true, nil)
+		compute.EXPECT().HandleQuery(gomock.Any(), gomock.Eq(inputQuery)).Return(query, nil)
+		storage.EXPECT().Get(gomock.Any(), arg0).Return(expValue, true, nil)
 
 		res := database.HandleQuery(ctx, inputQuery)
 
@@ -118,8 +119,8 @@ func TestDatabase_GetCommand(t *testing.T) {
 		compute, storage := getMockComputeAndStorage(t)
 		database, err := NewDatabase(compute, storage, dlog.NewNonSlog())
 		require.NoError(t, err)
-		compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
-		storage.EXPECT().Get(ctx, arg0).Return("", false, nil)
+		compute.EXPECT().HandleQuery(gomock.Any(), gomock.Eq(inputQuery)).Return(query, nil)
+		storage.EXPECT().Get(gomock.Any(), arg0).Return("", false, nil)
 
 		res := database.HandleQuery(ctx, inputQuery)
 
@@ -131,8 +132,8 @@ func TestDatabase_GetCommand(t *testing.T) {
 		compute, storage := getMockComputeAndStorage(t)
 		database, err := NewDatabase(compute, storage, dlog.NewNonSlog())
 		require.NoError(t, err)
-		compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
-		storage.EXPECT().Get(ctx, arg0).Return("", false, errors.New("test error"))
+		compute.EXPECT().HandleQuery(gomock.Any(), gomock.Eq(inputQuery)).Return(query, nil)
+		storage.EXPECT().Get(gomock.Any(), arg0).Return("", false, errors.New("test error"))
 
 		res := database.HandleQuery(ctx, inputQuery)
 
@@ -146,7 +147,7 @@ func TestDatabase_DelCommand(t *testing.T) {
 	inputQuery := "DEL keyD"
 	arg0 := "keyD"
 	query := Query{
-		commandID: DelCommandID,
+		commandID: comd.DelCommandID,
 		arguments: []string{arg0},
 	}
 
@@ -155,8 +156,8 @@ func TestDatabase_DelCommand(t *testing.T) {
 		compute, storage := getMockComputeAndStorage(t)
 		database, err := NewDatabase(compute, storage, dlog.NewNonSlog())
 		require.NoError(t, err)
-		compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
-		storage.EXPECT().Delete(ctx, arg0).Return(nil)
+		compute.EXPECT().HandleQuery(gomock.Any(), gomock.Eq(inputQuery)).Return(query, nil)
+		storage.EXPECT().Delete(gomock.Any(), arg0).Return(nil)
 
 		res := database.HandleQuery(ctx, inputQuery)
 
@@ -169,8 +170,8 @@ func TestDatabase_DelCommand(t *testing.T) {
 		database, err := NewDatabase(compute, storage, dlog.NewNonSlog())
 		require.NoError(t, err)
 		expError := errors.New("test error")
-		compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
-		storage.EXPECT().Delete(ctx, arg0).Return(expError)
+		compute.EXPECT().HandleQuery(gomock.Any(), gomock.Eq(inputQuery)).Return(query, nil)
+		storage.EXPECT().Delete(gomock.Any(), arg0).Return(expError)
 
 		res := database.HandleQuery(ctx, inputQuery)
 
@@ -187,10 +188,10 @@ func TestDatabase_UnknownCommand(t *testing.T) {
 	require.NoError(t, err)
 	inputQuery := "Unknown"
 	query := Query{
-		commandID: UnknownCommandID,
+		commandID: comd.UnknownCommandID,
 		arguments: nil,
 	}
-	compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(query, nil)
+	compute.EXPECT().HandleQuery(gomock.Any(), gomock.Eq(inputQuery)).Return(query, nil)
 
 	res := database.HandleQuery(ctx, inputQuery)
 
@@ -206,7 +207,7 @@ func TestDatabase_ComputeError(t *testing.T) {
 	require.NoError(t, err)
 	inputQuery := "TEST"
 	expError := errors.New("test error")
-	compute.EXPECT().HandleQuery(ctx, gomock.Eq(inputQuery)).Return(Query{}, expError)
+	compute.EXPECT().HandleQuery(gomock.Any(), gomock.Eq(inputQuery)).Return(Query{}, expError)
 
 	res := database.HandleQuery(ctx, inputQuery)
 
